@@ -27,49 +27,36 @@ $Return	= [false,'Geçersiz Bilgi'];
 $Post	= @file_get_contents('php://input');
 if(!empty($Post)){
 	if($Json=json_decode($Post,true)){
-		if($Json['Action'] == "Received"){	// Received Message
-			if(isset($Json['Senders'])){
-				$Errors	= [];
-				foreach($Json['Senders'] as $Say => $Sender){
-					if(isset($Sender['Name'],$Sender['Phone'],$Sender['Files'],$Sender['Messages'])){
-						if(is_array($Sender['Messages']) and count($Sender['Messages']) > 0){
-							foreach($Sender['Messages'] as $Time => $Message){
-								$Message	= trim(strip_tags($Message));
-								// Telefon: $Sender['Phone']
-								// Mesaj: $Message
-								// Mesajı Buraya Fonksiyon Yazarak Sitenize/Veritabanına Ekleyebilir, Mail Gönderebilir veya https://www.yoncu.com/whatsapp adresindeki Send API ile otomatik cevaplayabilirsiniz.
+		$Errors	= [];
+		if($Json['Action'] == "Received" and isset($Json['Phone'],$Json['Message'],$Json['Files'])){	// Received Message
+			if(strlen($Json['Message'])){
+				$Message	= trim(strip_tags($Json['Message']));
+				// Telefon: $Json['Phone']
+				// Mesaj: $Message
+				// Mesajı Buraya Fonksiyon Yazarak Sitenize/Veritabanına Ekleyebilir, Mail Gönderebilir veya https://www.yoncu.com/whatsapp adresindeki Send API ile otomatik cevaplayabilirsiniz.
 
-								// Örnek Cevaplama:
-								list($Status,$Info)	= YoncuWhatsAppAPI('Send',[
-									'Phone'		=> $Sender['Phone'],
-									'Message'	=> "Mesajınız Alınmıştır, teşekkürler.\n*".$_SERVER['HTTP_HOST']."*",
-								]);
-								if(empty($Status)){
-									$Errors[]	= $Info;
-								}
-							}
-						}
-						if(is_array($Sender['Files']) and count($Sender['Files']) > 0){
-							foreach($Sender['Files'] as $Zaman => $File){
-								$FileName	= trim(strip_tags($File));
-								// Telefon: $Sender['Phone']
-								// DosyaAdi: $FileName
-								// Dosya icerigini https://www.yoncu.com/whatsapp adresindeki FileDownload API ile çekebilirsiniz.
-								/**
-								// Örnek Dosya Çekme Kodu:
-								list($Status,$FileSource)	= YoncuWhatsAppAPI('FileDownload',['Phone'=>$Sender['Phone'],'File'=>$FileName,]);
-								if(empty($Status) or strlen($FileSource) < 100){
-									$Errors[]	= $FileSource;
-								}
-								*/
-							}
-						}
-					}
-				}
-				if(empty($Errors)){
-					$Return	= [true,'All Messages Accepted'];
-				}
+				// Örnek Cevaplama:
+				list($Status,$Info)	= YoncuWhatsAppAPI('Send',[
+					'Phone'		=> $Json['Phone'],
+					'Message'	=> "Mesajınız Alınmıştır, teşekkürler.\n*".$_SERVER['HTTP_HOST']."*",
+				]);
 			}
+			if(strlen($Json['Files']) > 0){
+				$FileName	= trim(strip_tags($Json['Files']));
+				// Telefon: $Json['Phone']
+				// DosyaAdi: $FileName
+				// Dosya icerigini https://www.yoncu.com/whatsapp adresindeki FileDownload API ile çekebilirsiniz.
+				/**
+				// Örnek Dosya Çekme Kodu:
+				list($Status,$FileSource)	= YoncuWhatsAppAPI('FileDownload',['Phone'=>$Json['Phone'],'File'=>$FileName,]);
+				if(empty($Status) or strlen($FileSource) < 100){
+					$Errors[]	= $FileSource;
+				}
+				*/
+			}
+		}
+		if(empty($Errors)){
+			$Return	= [true,'All Messages Accepted'];
 		}
 	}
 }
