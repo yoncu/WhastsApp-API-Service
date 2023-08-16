@@ -40,6 +40,9 @@ if(!empty($Post)){
 					'Phone'		=> $Json['Phone'],
 					'Message'	=> "Mesajınız Alınmıştır, teşekkürler.\n*".$_SERVER['HTTP_HOST']."*",
 				]);
+				if(empty($Status)){
+					$Errors[]	= $Info;
+				}
 			}
 			if(strlen($Json['Files']) > 0){
 				$FileName	= trim(strip_tags($Json['Files']));
